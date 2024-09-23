@@ -16,6 +16,7 @@ echo "alias makegif='/usr/local/bin/makegif'" >> ~/.zshrc && \
 source ~/.bashrc && \
 source ~/.zshrc
 ```
+You will need to enter `sudo` password as the script moves the `makegif` script to `/usr/local/bin`.
 
 1. **Download the Script**:
     ```sh
