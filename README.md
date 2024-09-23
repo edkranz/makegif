@@ -8,7 +8,7 @@ Simple shell script to generate gifs from videos using ffmpeg.
 
 If using `bash` or `zsh`, simply enter this command in your terminal:
 ```sh
-curl -O https://raw.githubusercontent.com/yourusername/yourrepository/main/makegif && \
+curl -O https://raw.githubusercontent.com/edkranz/makegif/refs/heads/main/makegif && \
 chmod +x makegif && \
 sudo mv makegif /usr/local/bin/ && \
 echo "alias makegif='/usr/local/bin/makegif'" >> ~/.bashrc && \
@@ -19,7 +19,7 @@ source ~/.zshrc
 
 1. **Download the Script**:
     ```sh
-    curl -O https://raw.githubusercontent.com/yourusername/yourrepository/main/makegif
+    curl -O https://raw.githubusercontent.com/edkranz/makegif/refs/heads/main/makegif
     chmod +x makegif
     ```
 
