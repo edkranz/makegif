@@ -1,2 +1,9 @@
-testmov.gif
-testmov.mov
+*.gif
+*.mov
+*.mp4
+*.avi
+*.mkv
+*.flv
+*.wmv
+*.webm
+*.m4v
