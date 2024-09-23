@@ -6,6 +6,16 @@ Simple shell script to generate gifs from videos using ffmpeg.
 
 ## Installation
 
+### Dependencies
+- `ffmpeg`, which can be installed via Homebrew on macOS:
+    ```sh
+    brew install ffmpeg
+    ```
+    Or on Ubuntu/Debian-based systems:
+    ```sh
+    sudo apt-get install ffmpeg
+    ```
+
 If using `bash` or `zsh`, simply enter this command in your terminal:
 ```sh
 curl -O https://raw.githubusercontent.com/edkranz/makegif/refs/heads/main/makegif && \
