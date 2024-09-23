@@ -1,0 +1,109 @@
+#!/bin/bash
+
+# Default values
+resolution="720"  # Set default resolution to medium (720p)
+output_gif=""
+max_resolution="false"
+resolution_text="Medium (720p)"
+
+# Function to display usage instructions
+usage() {
+    echo "Usage: makegif [-l | -m | -h | -max] <video input> [<gif output>]"
+    echo "  -l      Set resolution to 360p (low)"
+    echo "  -m      Set resolution to 720p (medium, default)"
+    echo "  -h      Set resolution to 1080p (high)"
+    echo "  -max    Use the original resolution of the input video"
+    echo "  Default resolution is 720p."
+    exit 1
+}
+
+# Function to show the spinner
+spinner() {
+    local pid=$1
+    local delay=0.1
+    local spinstr='|/-\'
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+        for i in {0..3}; do
+            printf "\r$2 [%c]  " "${spinstr:i:1}"
+            sleep $delay
+        done
+    done
+    printf "\r$2 [Done]\n"
+}
+
+# Function to generate a unique filename
+generate_unique_filename() {
+    local filename="$1"
+    local extension="${filename##*.}"
+    local name="${filename%.*}"
+    local counter=1
+    while [[ -e "$filename" ]]; do
+        filename="${name}($counter).$extension"
+        ((counter++))
+    done
+    echo "$filename"
+}
+
+# Parse resolution options
+while getopts ":lmhmax" opt; do
+  case $opt in
+    l) resolution="360" ; resolution_text="Low (360p)" ;;   # Low resolution (360p)
+    m) resolution="720" ; resolution_text="Medium (720p)" ;;   # Medium resolution (720p)
+    h) resolution="1080" ; resolution_text="High (1080p)" ;;  # High resolution (1080p)
+    max) max_resolution="true" ; resolution_text="Max (Original Resolution)" ;;  # Use input video resolution
+    \?) echo "Invalid option: -$OPTARG" >&2; usage ;;
+  esac
+done
+
+shift $((OPTIND - 1))
+
+# Check for required input video argument
+if [ "$#" -lt 1 ]; then
+    usage
+fi
+
+# Input video file
+input_video="$1"
+
+# Output gif file, if provided
+if [ "$#" -ge 2 ]; then
+    output_gif="$2"
+else
+    output_gif="${input_video%.*}.gif"  # Default output gif name
+fi
+
+# Generate a unique filename for the output gif
+output_gif=$(generate_unique_filename "$output_gif")
+
+# Palette file based on output gif name
+palette="${output_gif%.*}.palette.png"
+
+# Determine scale based on resolution, preserving aspect ratio
+if [ "$max_resolution" = "true" ]; then
+    scale="scale=-1:-1"  # Use input resolution
+else
+    case $resolution in
+      "360") scale="scale=iw*360/ih:360" ;;      # Set height to 360p, adjust width to maintain aspect ratio
+      "720") scale="scale=iw*720/ih:720" ;;      # Set height to 720p, adjust width to maintain aspect ratio (default)
+      "1080") scale="scale=iw*1080/ih:1080" ;;   # Set height to 1080p, adjust width to maintain aspect ratio
+    esac
+fi
+
+# Run ffmpeg commands with output redirected to /dev/null
+
+# Generate the palette
+ffmpeg -i "$input_video" -vf "fps=15,$scale:flags=lanczos,palettegen" "$palette" &>/dev/null &
+
+# Spinner while generating palette
+spinner $! "Generating palette for GIF at $resolution_text"
+
+# Create the GIF using the palette
+ffmpeg -i "$input_video" -i "$palette" -filter_complex "fps=15,$scale:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer" "$output_gif" &>/dev/null &
+
+# Spinner while generating gif
+spinner $! "Generating GIF at $resolution_text"
+
+# Clean up the palette file
+rm "$palette"
+
+echo "GIF created: $output_gif"
